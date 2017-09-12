@@ -5,7 +5,7 @@
 #####
 
 
-## INTRODUCION
+## INTRODUCTION
 ## ----------------------------------------------------------------------------
 ## This file is provided as sample in order to help you to write unit tests in 
 ## shell scripts.
