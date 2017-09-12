@@ -56,6 +56,8 @@ test_string_should_return_true_when_contained_pattern() {
     result=`STRING_contains "$str" "$pattern"`
 
     # Then
+    # Uncomment the line below to simulate a test in failure
+    # assertFalse "$result"
     assertTrue "$result"
 }
 
@@ -92,7 +94,7 @@ test_string_should_return_false_with_empty_pattern() {
     result=`STRING_contains "$str" "$pattern"`
 
     # Then
-    assertTrue "$result"
+    assertFalse "$result"
 }
 
 . $RUN_TEST
