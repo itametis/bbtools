@@ -79,6 +79,8 @@ test_string_should_return_false_with_empty_pattern() {
 ## Which assertions keywords are available ?
 In your unit tests, you can use the following assert functions :
 
+Note : the option [message] **is optional**.
+
 ```bash
 ## Equality
 assertEquals [message] 'expected value' '$value'
