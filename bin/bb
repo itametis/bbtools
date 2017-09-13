@@ -58,6 +58,16 @@ _define_home_directory() {
 
 
 #####
+# Display the logo
+##
+_display_logo() {
+    echo ""
+    echo "ITAMETIS (c) - BBTOOLS"
+    echo ""
+}
+
+
+#####
 ## Execute un fichier de tests unitaires.
 ##
 ## $1 - Le chemin (relatif ou absolu) vers le fichier de tests unitaires à exécuter.
@@ -142,12 +152,27 @@ case "$1" in
         ;;
 
 	*)
+		_display_logo
+
+		echo "Bash Builder Tools (aka BBTOOLS) is provided as is, under the AGPL License which"
+        echo "stands for GNU Affero General Public License) under the version 3.0 or at your"
+        echo "option any later version of this license."
+		echo ""
+		echo ""
 		echo "Usage: $MAIN_EXEC < clean | test | help > "
 		echo ""
 		echo "Goals of this command have the following behavior :"
-        echo "      clean   : removes everything under the './target/' directory and recreates it after that"
+        echo "      clean   : removes everything under the './target/' directory and recreates"
+        echo "                it after that"
         echo "      test    : [clean] + processes unit tests"
         echo "      help    : display this command line usage"
+		echo ""
+		echo ""
+		echo "Contact the team       : social@itametis.com"
+		echo "Page of project        : https://github.com/itametis/bbtools"
+		echo "Find the AGPL license  : http://www.gnu.org/licenses"
+		echo ""
+
 		exit 0
 		;;
 
