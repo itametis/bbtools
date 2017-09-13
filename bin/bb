@@ -143,10 +143,12 @@ _define_global_environment_variables
 case "$1" in
 
 	clean)
+		_display_logo
 		_clean
         ;;
 
 	test)
+		_display_logo
         _clean
 		_exec_test_suite
         ;;
@@ -161,7 +163,7 @@ case "$1" in
 		echo ""
 		echo "Usage: $MAIN_EXEC < clean | test | help > "
 		echo ""
-		echo "Goals of this command have the following behavior :"
+		echo "Goals details :"
         echo "      clean   : removes everything under the './target/' directory and recreates"
         echo "                it after that"
         echo "      test    : [clean] + processes unit tests"
