@@ -12,8 +12,8 @@ MAIN_EXEC="bb"
 # Removes the target directory and all its content.
 ##
 _clean() {
-    if [ -e "$BB_TARGET_FOLDER" ]; then
-        rm -rf "$BB_TARGET_FOLDER"
+    if [ -e "${BB_TARGET_FOLDER}" ]; then
+        rm -rf "${BB_TARGET_FOLDER}"
     fi
 }
 
@@ -23,18 +23,18 @@ _clean() {
 ##
 _define_global_environment_variables() {
     # Build paths
-    export_variable "BB_BUILD_FOLDER" `pwd`
-    export_variable "BB_SRC_FOLDER" "$BB_BUILD_FOLDER/src"
-    export_variable "BB_TARGET_FOLDER" "$BB_BUILD_FOLDER/target"
-    export_variable "BB_TARGET_TESTS" "$BB_TARGET_FOLDER/tests"
+    export_variable "BB_BUILD_FOLDER" "$(pwd)"
+    export_variable "BB_SRC_FOLDER" "${BB_BUILD_FOLDER}/src"
+    export_variable "BB_TARGET_FOLDER" "${BB_BUILD_FOLDER}/target"
+    export_variable "BB_TARGET_TESTS" "${BB_TARGET_FOLDER}/tests"
 
     # SHUNIT LIB
-    export_variable "BB_SHUNIT_PATH" "$BBTOOLS_HOME/lib/"
-    export_variable "RUN_TEST" "$BB_SHUNIT_PATH/shunit2"
+    export_variable "BB_SHUNIT_PATH" "${BBTOOLS_HOME}/lib/"
+    export_variable "RUN_TEST" "${BB_SHUNIT_PATH}/shunit2"
 
     # Sources paths
-    export SRC_PATH="$BB_SRC_FOLDER/main/bash"
-    export TEST_PATH="$BB_SRC_FOLDER/test/bash"
+    export SRC_PATH="${BB_SRC_FOLDER}/main/bash"
+    export TEST_PATH="${BB_SRC_FOLDER}/test/bash"
 }
 
 
@@ -44,16 +44,17 @@ _define_global_environment_variables() {
 _define_home_directory() {
     local value=""
 
-    if [ "$INVOKED_COMMAND" == "./${MAIN_EXEC}" ]; then
+    if [ "${INVOKED_COMMAND}" == "./${MAIN_EXEC}" ]; then
         value=".."
     else
-        if [ -L "$INVOKED_COMMAND" ]; then
-            INVOKED_COMMAND=`readlink -f "$INVOKED_COMMAND"`
+        if [ -L "${INVOKED_COMMAND}" ]; then
+            INVOKED_COMMAND=$(readlink -f "${INVOKED_COMMAND}")
         fi
-        value=`echo "${INVOKED_COMMAND}" | sed "s|/bin/${MAIN_EXEC}||g"`
+#        value=$(echo "${INVOKED_COMMAND}" | sed "s|/bin/${MAIN_EXEC}||g")
+        value="${INVOKED_COMMAND/\/bin\/${MAIN_EXEC}/}"
     fi
 
-    export_variable "BBTOOLS_HOME" "$value"
+    export_variable "BBTOOLS_HOME" "${value}"
 }
 
 
@@ -73,22 +74,34 @@ _display_logo() {
 ## $1 - Le chemin (relatif ou absolu) vers le fichier de tests unitaires à exécuter.
 ###
 _exec_test_file() {
-    mkdir -p "$BB_TARGET_FOLDER"
-    local BOLD=`tput bold`
-    local TEXT_RED=`tput setaf 1`
-    local TEXT_GREEN=`tput setaf 2`
-    local TEXT_YELLOW=`tput setaf 3`
-    local TEXT_BLUE=`tput setaf 4`
-    local TEXT_CYAN=`tput setaf 6`
-    local TEXT_WHITE=`tput setaf 7`
-    local RESET_FORMATTING=`tput sgr0`
+    local BOLD
+    local TEXT_RED
+    local TEXT_GREEN
+#    local TEXT_YELLOW
+    local TEXT_BLUE
+    local TEXT_CYAN
+    local TEXT_WHITE
+    local RESET_FORMATTING
+    local testFile
 
-    testFile="$1"
-    echo -e "${TEXT_BLUE}${BOLD}$testFile${RESET_FORMATTING}"
+
+
+    mkdir -p "${BB_TARGET_FOLDER}"
+    BOLD=$(tput bold)
+    TEXT_RED=$(tput setaf 1)
+    TEXT_GREEN=$(tput setaf 2)
+#    TEXT_YELLOW=$(tput setaf 3)
+    TEXT_BLUE=$(tput setaf 4)
+    TEXT_CYAN=$(tput setaf 6)
+    TEXT_WHITE=$(tput setaf 7)
+    RESET_FORMATTING=$(tput sgr0)
+
+    testFile="${1}"
+    echo -e "${TEXT_BLUE}${BOLD}${testFile}${RESET_FORMATTING}"
     echo "-------------------------------------------------------------------------"
 
     # Filter output using sed
-    bash "$testFile" | sed \
+    bash "${testFile}" | sed \
                         -e "s/\(\OK\)/${TEXT_GREEN}${BOLD}\1${TEXT_WHITE}${RESET_FORMATTING}/g" \
                         -e "s/\(test_\)\(.*\)/${BOLD}${TEXT_GREEN}\1${TEXT_WHITE}\2${RESET_FORMATTING}/g" \
                         -e "s/\(FAILED\)\(.*\)/${BOLD}${TEXT_RED}\1${TEXT_CYAN}\2${RESET_FORMATTING}/g" \
@@ -96,7 +109,7 @@ _exec_test_file() {
 
 
     # Make sure formatting is reset
-    echo -ne ${RESET_FORMATTING}
+    echo -ne "${RESET_FORMATTING}"
 
     echo ""
 }
@@ -106,11 +119,12 @@ _exec_test_file() {
 ## Scans all the $TEST_PATH directory tree, builds the test suite to process, start the testing process.
 ###
 _exec_test_suite() {
-    list=`find $TEST_PATH/*test.*`
+    local list
+    list=$(find "${TEST_PATH}"/*test.*)
 
-    for i in $list
+    for i in ${list}
     do
-        _exec_test_file $i
+        _exec_test_file "${i}"
     done
     echo ""
     echo ""
@@ -123,8 +137,8 @@ _exec_test_suite() {
 # $2 - The value of the variable to export
 ##
 export_variable() {
-    declare -r -g $1="$2"
-    export $1
+    declare -r -g "${1}"="$2"
+    export "${1?}"
 }
 
 export -f export_variable
@@ -140,7 +154,7 @@ _define_home_directory
 _define_global_environment_variables
 
 # 3 - Read the command line and process it
-case "$1" in
+case "${1}" in
 
 	clean)
 		_display_logo
@@ -161,7 +175,7 @@ case "$1" in
         echo "option any later version of this license."
 		echo ""
 		echo ""
-		echo "Usage: $MAIN_EXEC < clean | test | help > "
+		echo "Usage: ${MAIN_EXEC} < clean | test | help > "
 		echo ""
 		echo "Goals details :"
         echo "      clean   : removes everything under the './target/' directory and recreates"
