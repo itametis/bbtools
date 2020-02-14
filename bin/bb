@@ -131,7 +131,7 @@ _exec_test_file() {
 ## Scan both sources and text then applie the Shellcheck analysis on.
 ###
 _exec_shellcheck_suite() {
-    list=`find ${TEST_PATH}/*test.*`
+    list=`find ${SRC_PATH}/*.*`
 
     for i in ${list}
     do

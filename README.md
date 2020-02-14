@@ -1,25 +1,27 @@
 # BBTOOLS
-Execute unit tests in bash / ksh / csh / shell scripts
+Execute unit tests in bash/dash/ksh/csh/shell scripts.
 
 
 ## What is BBTOOLS ?
-BBTOOL **is an overlay** of SHUNIT2 acting as an helper to write and execute **unit tests** easily.
+BBTOOL **is an overlay** of SHUNIT2 acting as an helper to write and execute **unit tests** easily. It's also an overlay of
+Shellcheck to process a source code analysis of script files.
 
 
 ## Which scripts languages supported ?
-Mainly BASH but anything else compliant with SHUNIT2 like CSH, KSH and so on.
+Mainly DASH & BASH but anything else compliant with both SHUNIT2 and Shellcheck such as CSH, KSH and so on.
 
 
 ## How to install BBTOOLS ?
-* Download the last archive inside the [release section]().
-* Extract it somewhere on your hard drive.
-* Add the **bb executable** under <BBTOOLS EXTRACT DIR>/bin/bb to your $PATH variable.
+* Download the repository.
+* Place it somewhere on your hard drive.
+* Add the **bb executable** (the one under <BBTOOLS EXTRACT DIR>/bin/bb) to your $PATH variable.
 
 And that's it !
 
 
 ## How to run it ?
 There is three parameters to the bb command line :
+- **bb check** : check the shell scripts using Shellcheck
 - **bb clean** : clean the working directory
 - **bb test** : generate the test suite and process it
 - **bb help** : display help
@@ -31,10 +33,10 @@ First of all, BBTOOLS respects the Apache Maven convention about the directory t
 project-folder
     |__ src/
         |__ main/
-        |   |__ bash/                   # Place your bash code there
+        |   |__ shell/                  # Place your bash code there
         |       |__ lib_string.sh
         |__ test/
-            |__ bash/                   # Place yours unit tests file there
+            |__ shell/                  # Place yours unit tests file there
         |       |__ lib_string_test.sh  # All unit test files HAVE TO end with 'test'
 ```
 
@@ -42,7 +44,7 @@ Content of **lib_string.sh** :
 ```bash
 #!/usr/bin/env bash
 # LOAD THE FILE TO TEST
-. "$SRC_PATH/lib_string.sh"
+. "${SRC_PATH}/lib_string.sh"
 
 
 ## WRITE YOUR UNIT TEST FUNCTION
@@ -53,10 +55,10 @@ test_string_should_return_true_when_contained_pattern() {
     pattern="string with"
 
     # When
-    result=`STRING_contains "$str" "$pattern"`
+    result=`STRING_contains "${str}" "${pattern}"`
 
     # Then
-    assertTrue "$result"
+    assertTrue "${result}"
 }
 
 test_string_should_return_false_with_empty_pattern() {
@@ -65,14 +67,14 @@ test_string_should_return_false_with_empty_pattern() {
     pattern=""
 
     # When
-    result=`STRING_contains "$str" "$pattern"`
+    result=`STRING_contains "${str}" "${pattern}"`
 
     # Then
-    assertFalse "$result"
+    assertFalse "${result}"
 }
 
 # ADD THIS UNIT TEST FILE INTO THE TEST SUITE
-. $RUN_TEST
+. ${RUN_TEST}
 ```
 
 
