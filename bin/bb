@@ -23,16 +23,18 @@ _clean() {
 ##
 _define_global_environment_variables() {
     # Build paths
-    export_variable "BB_BUILD_FOLDER" `pwd`
+    export_variable "BB_BUILD_FOLDER" "$(pwd)"
     export_variable "BB_SRC_FOLDER" "${BB_BUILD_FOLDER}/src"
     export_variable "BB_TARGET_FOLDER" "${BB_BUILD_FOLDER}/target"
     export_variable "BB_TARGET_TESTS" "${BB_TARGET_FOLDER}/tests"
 
-    # SHUNIT LIB
+    # SHELLCHECK LIB
     export_variable "BB_SHELLCHECK_PATH" "${BBTOOLS_HOME}/lib"
+    _init_RUN_SHELLCHECK
+
+    # SHUNIT LIB
     export_variable "BB_SHUNIT_PATH" "${BBTOOLS_HOME}/lib"
     export_variable "RUN_TEST" "${BB_SHUNIT_PATH}/shunit2"
-    _init_RUN_SHELLCHECK
 
     # Sources paths
     export SRC_PATH="${BB_SRC_FOLDER}/main/shell"
@@ -50,9 +52,9 @@ _define_home_directory() {
         value=".."
     else
         if [ -L "${INVOKED_COMMAND}" ]; then
-            INVOKED_COMMAND=`readlink -f "${INVOKED_COMMAND}"`
+            INVOKED_COMMAND=$(readlink -f "${INVOKED_COMMAND}")
         fi
-        value=`echo "${INVOKED_COMMAND}" | sed "s|/bin/${MAIN_EXEC}||g"`
+        value="${INVOKED_COMMAND/\/bin\/${MAIN_EXEC}/}"
     fi
 
     export_variable "BBTOOLS_HOME" "${value}"
@@ -72,7 +74,6 @@ _display_logo() {
 
 _exec_shellcheck_file() {
     local file=${1}
-    echo "AAA : ${RUN_SHELLCHECK} ${file}"
     ${RUN_SHELLCHECK} ${file}
 }
 
@@ -84,17 +85,29 @@ _exec_shellcheck_file() {
 ## $1 - Le chemin (relatif ou absolu) vers le fichier de tests unitaires à exécuter.
 ###
 _exec_test_file() {
-    mkdir -p "${BB_TARGET_FOLDER}"
-    local BOLD=`tput bold`
-    local TEXT_RED=`tput setaf 1`
-    local TEXT_GREEN=`tput setaf 2`
-    local TEXT_YELLOW=`tput setaf 3`
-    local TEXT_BLUE=`tput setaf 4`
-    local TEXT_CYAN=`tput setaf 6`
-    local TEXT_WHITE=`tput setaf 7`
-    local RESET_FORMATTING=`tput sgr0`
+    local BOLD
+    local TEXT_RED
+    local TEXT_GREEN
+#    local TEXT_YELLOW
+    local TEXT_BLUE
+    local TEXT_CYAN
+    local TEXT_WHITE
+    local RESET_FORMATTING
+    local testFile
 
-    testFile="$1"
+    mkdir -p "${BB_TARGET_FOLDER}"
+    BOLD=$(tput bold)
+    TEXT_RED=$(tput setaf 1)
+    TEXT_GREEN=$(tput setaf 2)
+#    TEXT_YELLOW=$(tput setaf 3)
+    TEXT_BLUE=$(tput setaf 4)
+    TEXT_CYAN=$(tput setaf 6)
+    TEXT_WHITE=$(tput setaf 7)
+    RESET_FORMATTING=$(tput sgr0)
+
+    testFile="${1}"
+
+
     echo -e "${TEXT_BLUE}${BOLD}${testFile}${RESET_FORMATTING}"
     echo "-------------------------------------------------------------------------"
 
@@ -107,7 +120,7 @@ _exec_test_file() {
 
 
     # Make sure formatting is reset
-    echo -ne ${RESET_FORMATTING}
+    echo -ne "${RESET_FORMATTING}"
 
     echo ""
 }
@@ -134,11 +147,12 @@ _exec_shellcheck_suite() {
 ## Scans all the ${TEST_PATH} directory tree, builds the test suite to process, start the testing process.
 ###
 _exec_test_suite() {
-    list=`find ${TEST_PATH}/*test.*`
+    local list
+    list=$(find "${TEST_PATH}"/*test.*)
 
     for i in ${list}
     do
-        _exec_test_file ${i}
+        _exec_test_file "${i}"
     done
     echo ""
     echo ""
@@ -151,8 +165,8 @@ _exec_test_suite() {
 # $2 - The value of the variable to export
 ##
 export_variable() {
-    declare -r -g ${1}="$2"
-    export "${1}"
+    declare -r -g "${1}"="$2"
+    export "${1?}"
 }
 
 export -f export_variable
@@ -182,22 +196,24 @@ _define_global_environment_variables
 
 # 3 - Read the command line and process it
 case "${1}" in
-
 	check)
 		_display_logo
 		_exec_shellcheck_suite
         ;;
+
 
 	clean)
 		_display_logo
 		_clean
         ;;
 
+
 	test)
 		_display_logo
         _clean
 		_exec_test_suite
         ;;
+
 
 	*)
 		_display_logo
