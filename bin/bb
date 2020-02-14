@@ -9,11 +9,11 @@ MAIN_EXEC="bb"
 
 
 #####
-# Removes the target directory and all its content.
+# Removes all the content of the target directory (but keep the directory itself).
 ##
 _clean() {
-    if [ -e "$BB_TARGET_FOLDER" ]; then
-        rm -rf "$BB_TARGET_FOLDER"
+    if [ -e "${BB_TARGET_FOLDER}" ]; then
+        rm -rf "${BB_TARGET_FOLDER}/*"
     fi
 }
 
@@ -24,36 +24,38 @@ _clean() {
 _define_global_environment_variables() {
     # Build paths
     export_variable "BB_BUILD_FOLDER" `pwd`
-    export_variable "BB_SRC_FOLDER" "$BB_BUILD_FOLDER/src"
-    export_variable "BB_TARGET_FOLDER" "$BB_BUILD_FOLDER/target"
-    export_variable "BB_TARGET_TESTS" "$BB_TARGET_FOLDER/tests"
+    export_variable "BB_SRC_FOLDER" "${BB_BUILD_FOLDER}/src"
+    export_variable "BB_TARGET_FOLDER" "${BB_BUILD_FOLDER}/target"
+    export_variable "BB_TARGET_TESTS" "${BB_TARGET_FOLDER}/tests"
 
     # SHUNIT LIB
-    export_variable "BB_SHUNIT_PATH" "$BBTOOLS_HOME/lib/"
-    export_variable "RUN_TEST" "$BB_SHUNIT_PATH/shunit2"
+    export_variable "BB_SHELLCHECK_PATH" "${BBTOOLS_HOME}/lib"
+    export_variable "BB_SHUNIT_PATH" "${BBTOOLS_HOME}/lib"
+    export_variable "RUN_TEST" "${BB_SHUNIT_PATH}/shunit2"
+    _init_RUN_SHELLCHECK
 
     # Sources paths
-    export SRC_PATH="$BB_SRC_FOLDER/main/bash"
-    export TEST_PATH="$BB_SRC_FOLDER/test/bash"
+    export SRC_PATH="${BB_SRC_FOLDER}/main/shell"
+    export TEST_PATH="${BB_SRC_FOLDER}/test/shell"
 }
 
 
 #####
-# Finds the installation directory and sets it into the '$BBTOOLS_HOME' global variable.
+# Finds the installation directory and sets it into the '${BBTOOLS_HOME}' global variable.
 ##
 _define_home_directory() {
     local value=""
 
-    if [ "$INVOKED_COMMAND" == "./${MAIN_EXEC}" ]; then
+    if [ "${INVOKED_COMMAND}" == "./${MAIN_EXEC}" ]; then
         value=".."
     else
-        if [ -L "$INVOKED_COMMAND" ]; then
-            INVOKED_COMMAND=`readlink -f "$INVOKED_COMMAND"`
+        if [ -L "${INVOKED_COMMAND}" ]; then
+            INVOKED_COMMAND=`readlink -f "${INVOKED_COMMAND}"`
         fi
         value=`echo "${INVOKED_COMMAND}" | sed "s|/bin/${MAIN_EXEC}||g"`
     fi
 
-    export_variable "BBTOOLS_HOME" "$value"
+    export_variable "BBTOOLS_HOME" "${value}"
 }
 
 
@@ -67,13 +69,22 @@ _display_logo() {
 }
 
 
+
+_exec_shellcheck_file() {
+    local file=${1}
+    echo "AAA : ${RUN_SHELLCHECK} ${file}"
+    ${RUN_SHELLCHECK} ${file}
+}
+
+
+
 #####
 ## Execute un fichier de tests unitaires.
 ##
 ## $1 - Le chemin (relatif ou absolu) vers le fichier de tests unitaires à exécuter.
 ###
 _exec_test_file() {
-    mkdir -p "$BB_TARGET_FOLDER"
+    mkdir -p "${BB_TARGET_FOLDER}"
     local BOLD=`tput bold`
     local TEXT_RED=`tput setaf 1`
     local TEXT_GREEN=`tput setaf 2`
@@ -84,11 +95,11 @@ _exec_test_file() {
     local RESET_FORMATTING=`tput sgr0`
 
     testFile="$1"
-    echo -e "${TEXT_BLUE}${BOLD}$testFile${RESET_FORMATTING}"
+    echo -e "${TEXT_BLUE}${BOLD}${testFile}${RESET_FORMATTING}"
     echo "-------------------------------------------------------------------------"
 
     # Filter output using sed
-    bash "$testFile" | sed \
+    bash "${testFile}" | sed \
                         -e "s/\(\OK\)/${TEXT_GREEN}${BOLD}\1${TEXT_WHITE}${RESET_FORMATTING}/g" \
                         -e "s/\(test_\)\(.*\)/${BOLD}${TEXT_GREEN}\1${TEXT_WHITE}\2${RESET_FORMATTING}/g" \
                         -e "s/\(FAILED\)\(.*\)/${BOLD}${TEXT_RED}\1${TEXT_CYAN}\2${RESET_FORMATTING}/g" \
@@ -102,15 +113,32 @@ _exec_test_file() {
 }
 
 
+
 #####
-## Scans all the $TEST_PATH directory tree, builds the test suite to process, start the testing process.
+## Scan both sources and text then applie the Shellcheck analysis on.
+###
+_exec_shellcheck_suite() {
+    list=`find ${TEST_PATH}/*test.*`
+
+    for i in ${list}
+    do
+        _exec_shellcheck_file ${i}
+    done
+    echo ""
+    echo ""
+}
+
+
+
+#####
+## Scans all the ${TEST_PATH} directory tree, builds the test suite to process, start the testing process.
 ###
 _exec_test_suite() {
-    list=`find $TEST_PATH/*test.*`
+    list=`find ${TEST_PATH}/*test.*`
 
-    for i in $list
+    for i in ${list}
     do
-        _exec_test_file $i
+        _exec_test_file ${i}
     done
     echo ""
     echo ""
@@ -123,11 +151,24 @@ _exec_test_suite() {
 # $2 - The value of the variable to export
 ##
 export_variable() {
-    declare -r -g $1="$2"
-    export $1
+    declare -r -g ${1}="$2"
+    export "${1}"
 }
 
 export -f export_variable
+
+
+
+_init_RUN_SHELLCHECK() {
+    local hasShellcheck=$(whereis "shellcheck" | sed  "s|shellcheck:||")
+
+    if [ "${hasShellcheck}" == "" ]; then
+        export_variable "RUN_SHELLCHECK" "${BB_SHELLCHECK_PATH}/shellcheck"
+    else
+        shellcheckPath=$(echo "${hasShellcheck}" | sed "s|^ ||")
+        export_variable "RUN_SHELLCHECK" "${shellcheckPath}"
+    fi
+}
 
 
 
@@ -140,7 +181,12 @@ _define_home_directory
 _define_global_environment_variables
 
 # 3 - Read the command line and process it
-case "$1" in
+case "${1}" in
+
+	check)
+		_display_logo
+		_exec_shellcheck_suite
+        ;;
 
 	clean)
 		_display_logo
@@ -161,13 +207,15 @@ case "$1" in
         echo "option any later version of this license."
 		echo ""
 		echo ""
-		echo "Usage: $MAIN_EXEC < clean | test | help > "
+		echo "Usage: ${MAIN_EXEC} < check | clean | test | help > "
 		echo ""
 		echo "Goals details :"
         echo "      clean   : removes everything under the './target/' directory and recreates"
         echo "                it after that"
-        echo "      test    : [clean] + processes unit tests"
-        echo "      help    : display this command line usage"
+        echo "      check   : execute a script analysis using shellcheck (use the OS installed"
+        echo "                version prior to the embedded one."
+        echo "      test    : [clean] + processes unit tests."
+        echo "      help    : display this command line usage."
 		echo ""
 		echo ""
 		echo "Contact the team       : social@itametis.com"
