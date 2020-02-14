@@ -6,7 +6,7 @@
 
 INVOKED_COMMAND=$_
 MAIN_EXEC="bb"
-
+VERSION="1.1.0"
 
 #####
 # Removes all the content of the target directory (but keep the directory itself).
@@ -66,7 +66,7 @@ _define_home_directory() {
 ##
 _display_logo() {
     echo ""
-    echo "ITAMETIS (c) - BBTOOLS"
+    echo "ITAMETIS (c) - BBTOOLS ${VERSION}"
     echo ""
 }
 
