@@ -7,7 +7,7 @@
 
 ## INTRODUCTION
 ## ----------------------------------------------------------------------------
-## This file is provided as sample in order to help you to write unit tests in 
+## This file is provided as sample in order to help you to write unit tests in
 ## shell scripts.
 ##
 ## There is always three steps to respect during the testing process :

@@ -18,6 +18,18 @@ _clean() {
 }
 
 
+_copy_source_file_in_target_test_folder() {
+    local source
+    local destination
+
+    source=$(echo "${SRC_DIR}" | sed "s| |\ |")
+    destination=$(echo "${BB_TARGET_TEST}" | sed "s| |\ |")
+
+    mkdir -p "${BB_TARGET_TEST}"
+    cp --recursive ${source}/* ${destination}/.
+}
+
+
 #####
 # Initializes all environments variables used by BBTOOLS during build.
 ##
@@ -25,16 +37,18 @@ _define_global_environment_variables() {
     # Build paths
     export_variable "BB_BUILD_FOLDER" "$(pwd)"
     export_variable "BB_SRC_FOLDER" "${BB_BUILD_FOLDER}/src"
+    export_variable "SRC_DIR" "${BB_SRC_FOLDER}/main/shell"
+    export_variable "TEST_DIR" "${BB_BUILD_FOLDER}/src/test/shell"
     export_variable "BB_TARGET_FOLDER" "${BB_BUILD_FOLDER}/target"
-    export_variable "BB_TARGET_TESTS" "${BB_TARGET_FOLDER}/tests"
+    export_variable "BB_TARGET_TEST" "${BB_TARGET_FOLDER}/test"
 
     # SHUNIT LIB
     export_variable "BB_SHUNIT_PATH" "${BBTOOLS_HOME}/lib/"
     export_variable "RUN_TEST" "${BB_SHUNIT_PATH}/shunit2"
 
     # Sources paths
-    export SRC_PATH="${BB_SRC_FOLDER}/main/bash"
-    export TEST_PATH="${BB_SRC_FOLDER}/test/bash"
+    export SRC_PATH="${BB_TARGET_TEST}"
+    export TEST_PATH="${BB_SRC_FOLDER}/test/shell"
 }
 
 
@@ -59,7 +73,7 @@ _define_home_directory() {
 
 
 #####
-# Display the logo
+# Display the logo.
 ##
 _display_logo() {
     echo ""
@@ -116,11 +130,17 @@ _exec_test_file() {
 
 
 #####
-## Scans all the $TEST_PATH directory tree, builds the test suite to process, start the testing process.
+## Scans all the ${TEST_PATH} directory tree, builds the test suite to process, start the testing process.
 ###
 _exec_test_suite() {
+    _copy_source_file_in_target_test_folder
+
+
+    local srcTestFolder
+    srcTestFolder=$(echo "${TEST_DIR}" | sed "s| |\ |")
+
     local list
-    list=$(find "${TEST_PATH}"/*test.*)
+    list=$(find ${srcTestFolder}/*test.*)
 
     for i in ${list}
     do
@@ -134,7 +154,7 @@ _exec_test_suite() {
 #####
 # Exports the specified variable as constant.
 # $1 - The name of the variable to export.
-# $2 - The value of the variable to export
+# $2 - The value of the variable to export.
 ##
 export_variable() {
     declare -r -g "${1}"="$2"
@@ -157,12 +177,10 @@ _define_global_environment_variables
 case "${1}" in
 
 	clean)
-		_display_logo
 		_clean
         ;;
 
 	test)
-		_display_logo
         _clean
 		_exec_test_suite
         ;;
