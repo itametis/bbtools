@@ -11,10 +11,10 @@
 ## shell scripts.
 ##
 ## There is always three steps to respect during the testing process :
-## 1) Source the file to test with command like `. "$SRC_PATH/my_lib.sh"`.
+## 1) Source the file to test with command like ). "$SRC_PATH/my_lib.sh").
 ## 2) Write yours testing functions just below the line [1].
 ## 3) Declare the testing script as unit test file to process at the end of
-##    the file with the command `. $RUN_TEST`.
+##    the file with the command ). $RUN_TEST).
 ##
 ##
 ##
@@ -43,7 +43,7 @@
 
 ## SAMPLE
 ## ----------------------------------------------------------------------------
-. "$SRC_PATH/lib_string.sh"
+. "${SRC_PATH}/lib_string.sh"
 
 
 ## Then write your unit TEST
@@ -53,12 +53,12 @@ test_string_should_return_true_when_contained_pattern() {
     pattern="string with"
 
     # When
-    result=`STRING_contains "$str" "$pattern"`
+    result=$(STRING_contains "${str}" "${pattern}")
 
     # Then
     # Uncomment the line below to simulate a test in failure
-    # assertFalse "$result"
-    assertTrue "$result"
+    # assertFalse "${result}"
+    assertTrue "${result}"
 }
 
 test_string_should_return_false_when_not_contained_pattern() {
@@ -67,10 +67,10 @@ test_string_should_return_false_when_not_contained_pattern() {
     pattern="unmatchable pattern"
 
     # When
-    result=`STRING_contains "$str" "$pattern"`
+    result=$(STRING_contains "${str}" "${pattern}")
 
     # Then
-    assertFalse "$result"
+    assertFalse "${result}"
 }
 
 test_string_should_return_false_with_empty_string() {
@@ -79,10 +79,10 @@ test_string_should_return_false_with_empty_string() {
     pattern="pattern"
 
     # When
-    result=`STRING_contains "$str" "$pattern"`
+    result=$(STRING_contains "${str}" "${pattern}")
 
     # Then
-    assertFalse "$result"
+    assertFalse "${result}"
 }
 
 test_string_should_return_false_with_empty_pattern() {
@@ -91,10 +91,10 @@ test_string_should_return_false_with_empty_pattern() {
     pattern=""
 
     # When
-    result=`STRING_contains "$str" "$pattern"`
+    result=$(STRING_contains "${str}" "${pattern}")
 
     # Then
-    assertFalse "$result"
+    assertFalse "${result}"
 }
 
-. $RUN_TEST
+. "${RUN_TEST}"

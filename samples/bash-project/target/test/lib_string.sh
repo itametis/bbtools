@@ -16,17 +16,17 @@
 STRING_contains() {
     local result=""
 
-    if [ "$1" == "" ] || [ "$2" == "" ]; then
+    if [ "${1}" == "" ] || [ "${2}" == "" ]; then
         result="false"
     else
-        local exec=`echo $1 | grep "$2"`
+        local exec=`echo ${1} | grep "${2}"`
 
-        if [ "$exec" == "" ]; then
+        if [ "${exec}" == "" ]; then
             result="false"
         else
             result="true"
         fi
     fi
 
-    echo "$result"
+    echo "${result}"
 }
